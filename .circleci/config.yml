@@ -1,0 +1,55 @@
+version: 2.1
+orbs:
+  node: circleci/node@3.0.1
+dependencies:
+  pre:
+    - npm install npm@latest -g # Should fix bug in ng test
+jobs:
+  build-backend:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          app-dir: ~
+          cache-path: ~/node_modules
+          override-ci-command: npm install
+      - run:
+          name: Build Production Build
+          command: ./node_modules/typescript/bin/tsc
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+
+  deploy-backend:
+    working_directory: ~
+    machine:
+      enabled: true
+    steps:
+      - attach_workspace:
+          at: .
+      - add_ssh_keys
+      - run:
+          name: Upload Production build to server
+          command: |
+            cp bg.jpg ./build/
+            cp package.json ./build/
+            cp package-lock.json ./build/
+            scp -r ./build/* filip@34.89.164.251:/home/filip/backend-temp/
+      - run:
+          name: Deploy Backend over SSH
+          command: |
+            ssh filip@34.89.164.251 "pm2 stop 0 && sudo rm -rf /home/filip/backend-prod/* && sudo mv /home/filip/backend-temp/* /home/filip/backend-prod/ && sudo cp /home/filip/.env /home/filip/backend-prod/ && cd /home/filip/backend-prod/ && npm i && pm2 start 0 -f"
+workflows:
+  build:
+    jobs:
+      - build-backend
+      - deploy-backend:
+          requires:
+            - build-backend
+          filters:
+            branches:
+              only: master
