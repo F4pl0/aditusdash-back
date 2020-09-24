@@ -35,7 +35,6 @@ jobs:
       - run:
           name: Upload Production build to server
           command: |
-            cp bg.jpg ./build/
             cp package.json ./build/
             cp package-lock.json ./build/
             scp -r ./build/* root@46.101.19.84:/root/aditusdash-back-temp/
