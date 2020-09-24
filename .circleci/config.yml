@@ -38,11 +38,11 @@ jobs:
             cp bg.jpg ./build/
             cp package.json ./build/
             cp package-lock.json ./build/
-            scp -r ./build/* filip@34.89.164.251:/home/filip/backend-temp/
+            scp -r ./build/* root@46.101.19.84:/root/aditusdash-back-temp/
       - run:
           name: Deploy Backend over SSH
           command: |
-            ssh filip@34.89.164.251 "pm2 stop 0 && sudo rm -rf /home/filip/backend-prod/* && sudo mv /home/filip/backend-temp/* /home/filip/backend-prod/ && sudo cp /home/filip/.env /home/filip/backend-prod/ && cd /home/filip/backend-prod/ && npm i && pm2 start 0 -f"
+            ssh root@46.101.19.84 "pm2 stop 0 && sudo rm -rf /root/aditusdash-back-prod/* && sudo mv /root/aditusdash-back-temp/* /root/aditusdash-back-prod/ && sudo cp /root/.env /root/aditusdash-back-prod/ && cd /root/aditusdash-back-prod/ && npm i && pm2 start 0 -f"
 workflows:
   build:
     jobs:
