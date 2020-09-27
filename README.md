@@ -1,4 +1,4 @@
-# arijakids-back
+# aditusdash-back
 Backend za Aditus Dash u Node.js TS
 
 ## Setup projekta za dev
