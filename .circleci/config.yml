@@ -37,11 +37,11 @@ jobs:
           command: |
             cp package.json ./build/
             cp package-lock.json ./build/
-            scp -r ./build/* root@46.101.19.84:/root/aditusdash-back-temp/
+            scp -r ./build/* root@365aditus.com:/root/aditusdash-back-temp/
       - run:
           name: Deploy Backend over SSH
           command: |
-            ssh root@46.101.19.84 "pm2 stop 0 && sudo rm -rf /root/aditusdash-back-prod/* && sudo mv /root/aditusdash-back-temp/* /root/aditusdash-back-prod/ && sudo cp /root/.env /root/aditusdash-back-prod/ && cd /root/aditusdash-back-prod/ && npm i && pm2 start 0 -f"
+            ssh root@365aditus.com "pm2 stop 0 && sudo rm -rf /root/aditusdash-back-prod/* && sudo mv /root/aditusdash-back-temp/* /root/aditusdash-back-prod/ && sudo cp /root/.env /root/aditusdash-back-prod/ && cd /root/aditusdash-back-prod/ && npm i && pm2 start 0 -f"
 workflows:
   build:
     jobs:

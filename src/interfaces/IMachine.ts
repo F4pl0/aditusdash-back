@@ -20,6 +20,7 @@ export interface IMachineNewDTO {
 }
 
 export interface IMachineUpdateDTO {
+    _id: string;
     location: string;
     image: string;
     item: string;
@@ -27,5 +28,10 @@ export interface IMachineUpdateDTO {
     maxStock: number;
     price: number;
     locationPrice: number;
+}
+
+export interface IMachineRestockDTO {
+    _id: string;
+    stock: number;
 }
 

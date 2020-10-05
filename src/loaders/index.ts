@@ -3,6 +3,8 @@ import mongooseLoader from './mongoose';
 import dependencyInjectorLoader from './dependencyInjector';
 import Logger from './logger';
 import {Express} from "express";
+import mqtt from "./mqtt";
+import {Container} from "typedi";
 
 export default async ({ expressApp } : {expressApp:Express}) => {
 
@@ -35,5 +37,10 @@ export default async ({ expressApp } : {expressApp:Express}) => {
     Logger.info('Dependency Injector loaded');
 
     await expressLoader({ app: expressApp });
+
     Logger.info('Express loaded');
+
+    await mqtt();
+
+    Logger.info('MQTT loaded');
 };
