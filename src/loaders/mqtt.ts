@@ -51,7 +51,7 @@ export default async (): Promise<MqttClient> => {
                     status: 'ackSales'
                 };
 
-                machineServiceInstance.ReceiveMQTTUpdate(msg._id, msg.sales, msg.date, msg.stockLeft);
+                machineServiceInstance.ReceiveMQTTUpdate(msg._id, msg.date, msg.stockLeft);
 
                 client.publish('aditusCommMaster', JSON.stringify(res));
                 break;
