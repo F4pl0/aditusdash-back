@@ -4,6 +4,8 @@ import AuthService from '../../services/auth';
 import { celebrate, Joi } from 'celebrate';
 import { Logger } from "winston";
 import {IUserRegisterDTO} from "../../interfaces/IUser";
+import isAuth from "../middlewares/isAuth";
+import isAdmin from "../middlewares/isAdmin";
 
 const route = Router();
 
@@ -14,11 +16,14 @@ export default (app: Router) => {
 
     route.post(
         '/register',
+        isAuth,
+        isAdmin,
         celebrate({
             body: Joi.object({
                 name: Joi.string().required(),
                 email: Joi.string().required(),
                 pass: Joi.string().required(),
+                admin: Joi.boolean().required()
             }),
         }),
         async (req: Request, res: Response, next: NextFunction) => {
@@ -63,6 +68,29 @@ export default (app: Router) => {
                             return res.status(200).json({ message: 'Korisnik nije registrovan' });
                         case 1:
                             return res.status(200).json({ message: 'Lozinka nije tačna' });
+                    }
+                }
+            } catch (e) {
+                logger.error(' error: %o',  e );
+                return next(e);
+            }
+        },
+    );
+
+    route.get(
+        '/getAll',
+        isAuth,
+        isAdmin,
+        async (req: Request, res: Response, next: NextFunction) => {
+            logger.debug('Calling GetAllUsers endpoint with body: %o', req.body)
+            try {
+                const { users, success, reason } = await authServiceInstance.GetAllUsers();
+                if(success) {
+                    return res.status(201).json({ users });
+                } else {
+                    switch (reason) {
+                        case 0:
+                            return res.status(200).json({ message: 'Serverska Greska' });
                     }
                 }
             } catch (e) {

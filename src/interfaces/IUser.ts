@@ -11,6 +11,7 @@ export interface IUserRegisterDTO {
     name: string;
     email: string;
     pass: string;
+    admin: boolean;
 }
 
 export interface IUserLoginDTO {

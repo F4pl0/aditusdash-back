@@ -29,7 +29,6 @@ export default class AuthService {
                 ...userRegisterDTO,
                 salt: salt.toString('hex'),
                 pass: hashedPassword,
-                admin: false
             });
             this.logger.silly('Generating JWT');
             const token = this.generateToken(userRecord);
@@ -83,6 +82,22 @@ export default class AuthService {
         }
     }
 
+    public async GetAllUsers(): Promise<{ users?: IUser[], success: boolean, reason? }> {
+        try {
+            const userRecords = await this.userModel.find();
+
+            userRecords.forEach( user => {
+                Reflect.deleteProperty(user, 'pass');
+                Reflect.deleteProperty(user, 'salt');
+            });
+
+            return { users: userRecords, success: true };
+        } catch (e) {
+            return { success: false, reason: 0 };
+        }
+
+    }
+
     private generateToken(user: IUser) {
         const today = new Date();
         const exp = new Date(today);
@@ -93,6 +108,7 @@ export default class AuthService {
             {
                 _id: user._id, // We are gonna use this in the middleware 'isAuth'
                 name: user.name,
+                admin: user.admin,
                 exp: exp.getTime() / 1000,
             },
             config.jwtSecret,
