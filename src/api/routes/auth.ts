@@ -77,6 +77,56 @@ export default (app: Router) => {
         },
     );
 
+    route.post(
+        '/deleteUser',
+        isAuth,
+        isAdmin,
+        celebrate({
+            body: Joi.object({
+                _id: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response, next: NextFunction) => {
+            logger.debug('Calling Delete User endpoint with body: %o', req.body)
+            try {
+                const { success, reason } = await authServiceInstance.DeleteUser(req.body._id);
+                if(success) {
+                    return res.status(201).json({ success: true });
+                } else {
+                    return res.status(200).json({ message: 'Serverska greska' });
+                }
+            } catch (e) {
+                logger.error(' error: %o',  e );
+                return next(e);
+            }
+        },
+    );
+
+    route.post(
+        '/makeAdmin',
+        isAuth,
+        isAdmin,
+        celebrate({
+            body: Joi.object({
+                _id: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response, next: NextFunction) => {
+            logger.debug('Calling Delete User endpoint with body: %o', req.body)
+            try {
+                const { success, reason } = await authServiceInstance.MakeAdmin(req.body._id);
+                if(success) {
+                    return res.status(201).json({ success: true });
+                } else {
+                    return res.status(200).json({ message: 'Serverska greska' });
+                }
+            } catch (e) {
+                logger.error(' error: %o',  e );
+                return next(e);
+            }
+        },
+    );
+
     route.get(
         '/getAll',
         isAuth,

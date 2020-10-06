@@ -82,6 +82,24 @@ export default class AuthService {
         }
     }
 
+    public async MakeAdmin(_id): Promise<{ success: boolean, reason? }> {
+        const userRecord = await this.userModel.findOne({ _id, admin: false });
+        if (!userRecord) {
+            // User does not exist
+            return { success: false, reason: 0 };
+        }
+
+        userRecord.admin = true;
+        await userRecord.save();
+
+        return { success: true };
+    }
+
+    public async DeleteUser(_id): Promise<{ success: boolean, reason? }> {
+        const userRecord = await this.userModel.deleteOne({ _id, admin: false});
+        return { success: !!userRecord };
+    }
+
     public async GetAllUsers(): Promise<{ users?: IUser[], success: boolean, reason? }> {
         try {
             const userRecords = await this.userModel.find();
