@@ -14,6 +14,10 @@ const User = new mongoose.Schema(
             unique: true,
         },
 
+        admin: {
+            type: Boolean
+        },
+
         pass: String,
         salt: String,
     },

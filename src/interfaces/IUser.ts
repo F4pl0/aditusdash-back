@@ -4,6 +4,7 @@ export interface IUser {
     email: string;
     pass: string;
     salt: string;
+    admin: boolean;
 }
 
 export interface IUserRegisterDTO {

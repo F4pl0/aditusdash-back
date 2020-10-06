@@ -29,6 +29,7 @@ export default class AuthService {
                 ...userRegisterDTO,
                 salt: salt.toString('hex'),
                 pass: hashedPassword,
+                admin: false
             });
             this.logger.silly('Generating JWT');
             const token = this.generateToken(userRecord);
