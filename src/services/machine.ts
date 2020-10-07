@@ -179,7 +179,7 @@ export default class MachineService {
             const days = await this.dayModel.find({machine: _id});
 
             return { machine: {
-                    ...machineRecord,
+                    ...machineRecord._doc,
                     days
                 }, success: true };
         } catch (e) {
