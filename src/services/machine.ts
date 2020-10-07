@@ -179,6 +179,7 @@ export default class MachineService {
             const days = await this.dayModel.find({machine: _id});
 
             return { machine: {
+                //@ts-ignore
                     ...machineRecord._doc,
                     days
                 }, success: true };
