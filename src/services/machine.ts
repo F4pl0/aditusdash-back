@@ -102,6 +102,38 @@ export default class MachineService {
         }
     }
 
+    public async UpdateDay(machine, date, csvUrl): Promise<{ success: boolean, reason? }> {
+        try {
+            const dayRecord = await this.dayModel.findOne({machine, date});
+            const machineRecord = await this.machineModel.findOne({_id: machine});
+
+            if (!machineRecord) {
+                return { success: false, reason: 0 };
+            }
+
+            if (!dayRecord) {
+                // Create the daily record
+                await this.dayModel.create({
+                    machine: machineRecord._id,
+                    date,
+                    price: machineRecord.price,
+                    sales: 0,
+                    csvUrl: csvUrl
+                });
+            } else {
+                dayRecord.price = machineRecord.price;
+                dayRecord.csvUrl = csvUrl;
+                await dayRecord.save();
+            }
+
+            return { success: true };
+        } catch (e) {
+            this.logger.error(e);
+            // Mystery error
+            return { success: false, reason: 1 };
+        }
+    }
+
     public async Restock(machineRestockDTO: IMachineRestockDTO): Promise<{ success: boolean, reason? }> {
         try {
             const machineRecord = await this.machineModel.findOne({_id: machineRestockDTO._id});
@@ -144,8 +176,12 @@ export default class MachineService {
             const machineRecord = await this.machineModel.findOne({
                 _id
             });
+            const days = await this.dayModel.find({machine: _id});
 
-            return { machine: machineRecord, success: true };
+            return { machine: {
+                    ...machineRecord,
+                    days
+                }, success: true };
         } catch (e) {
             this.logger.error(e);
             // Mystery error
@@ -217,17 +253,19 @@ export default class MachineService {
             machineRecord.stock = stockLeft;
             machineRecord.save();
 
+            this.logger.debug('Date: '+date.getDate());
             // Update the daily sales record
             const dayRecord = await this.dayModel.findOne({
                 machine: _id,
-                date: date
+                date
             });
+
 
             if (!dayRecord) {
                 // Create the daily record
                 await this.dayModel.create({
                     machine: machineRecord._id,
-                    date: date,
+                    date,
                     price: machineRecord.price,
                     sales: delta,
                     csvUrl: ''
@@ -240,13 +278,14 @@ export default class MachineService {
 
             if(!machineRecord) {
                 this.logger.error('CRITICAL ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE IT DOES NOT EXIST');
-                this.logger.alert('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+                this.logger.warn('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
                 return;
             }
 
         } catch (e) {
             this.logger.error('ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE OF DATABASE ERROR');
-            this.logger.alert('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+            this.logger.error(e);
+            this.logger.warn('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
         }
 
         /*

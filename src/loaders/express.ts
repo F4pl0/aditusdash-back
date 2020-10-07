@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import routes from '../api';
 import { ErrorCodes } from '../constants';
+import fileUpload from 'express-fileupload';
 
 export default ({ app }: { app: express.Application }) => {
 
@@ -21,6 +22,11 @@ export default ({ app }: { app: express.Application }) => {
 
     // Middleware that transforms the raw string of req.body into json
     app.use(bodyParser.json());
+
+    // Enable file upload
+    app.use(fileUpload({
+        createParentPath: true
+    }));
 
     // Load API routes
     app.use('/api', routes());

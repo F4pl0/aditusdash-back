@@ -135,6 +135,46 @@ export default (app: Router) => {
     );
 
     route.post(
+        '/updateDay',
+        celebrate({
+            body: Joi.object({
+                machine: Joi.string().required(),
+                date: Joi.string().required(),
+            }),
+        }),
+        async (req:Request, res: Response, next: NextFunction) => {
+            logger.debug('Calling UpdateDay endpoint with body: %o', req.body )
+            try {
+                // @ts-ignore
+                req.files.csv.mv('../uploads/'+req.body.machine+'_'+req.body.date+'.csv');
+                const { success, reason } = await machineServiceInstance.UpdateDay(req.body.machine, new Date(req.body.date), 'https://api.365aditus.com/api/machine/csv/'+req.body.machine+'_'+req.body.date+'.csv');
+                if(success) {
+                    return res.status(201).json({ success: true });
+                } else {
+                    switch (reason) {
+                        case 0:
+                            return res.status(200).json({ message: 'Nepostojeca masina.' });
+                        case 1:
+                            return res.status(200).json({ message: 'Serverska greška. Pokušajte ponovo kasnije.' });
+                    }
+                }
+            } catch (e) {
+                logger.error('error: %o', e);
+                return next(e);
+            }
+        },
+    );
+
+    route.get(
+        '/csv/:csv',
+        async (req: Request, res: Response, next: NextFunction) => {
+
+            // Relative path file sending flaw, needs to be patched al me mrzi
+            res.send('../uploads/'+req.params.csv);
+        },
+    );
+
+    route.post(
         '/get',
         celebrate({
             body: Joi.object({
@@ -160,6 +200,8 @@ export default (app: Router) => {
             }
         },
     );
+
+
 
     route.post(
         '/restock',
