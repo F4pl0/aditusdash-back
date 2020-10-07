@@ -10,6 +10,7 @@ import nodemailer from 'nodemailer';
 import {IMachine, IMachineNewDTO, IMachineRestockDTO, IMachineUpdateDTO} from "../interfaces/IMachine";
 import {MqttClient} from "mqtt";
 import delay from "delay";
+import day from "../models/day";
 
 @Service()
 export default class MachineService {
@@ -17,6 +18,7 @@ export default class MachineService {
     logger: Logger = Container.get('logger');
     userModel: Models.UserModel = Container.get('userModel');
     machineModel: Models.MachineModel = Container.get('machineModel');
+    dayModel: Models.DayModel = Container.get('dayModel');
 
     waitingForRestock: boolean = false;
 
@@ -155,9 +157,7 @@ export default class MachineService {
         const mqtt: MqttClient = Container.get('mqtt');
 
         var tries = 0;
-
         var mqd = this.mqd;
-
         var ackd = false;
 
         while(!(await (async function waitForFoo(){
@@ -201,13 +201,61 @@ export default class MachineService {
     }
 
     public async ReceiveMQTTUpdate(_id: string, date: Date, stockLeft: number): Promise<void> {
+
+        try {
+            const machineRecord = await this.machineModel.findOne({_id});
+
+            if(!machineRecord) {
+                this.logger.error('CRITICAL ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE IT DOES NOT EXIST');
+                this.logger.alert('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+                return;
+            }
+
+            // Update the machine
+            const delta = machineRecord.stock - stockLeft;
+
+            machineRecord.stock = stockLeft;
+            machineRecord.save();
+
+            // Update the daily sales record
+            const dayRecord = await this.dayModel.findOne({
+                machine: _id,
+                date: date
+            });
+
+            if (!dayRecord) {
+                // Create the daily record
+                await this.dayModel.create({
+                    machine: machineRecord._id,
+                    date: date,
+                    price: machineRecord.price,
+                    sales: delta,
+                    csvUrl: ''
+                });
+            } else {
+                dayRecord.price = machineRecord.price;
+                dayRecord.sales += delta;
+                await dayRecord.save();
+            }
+
+            if(!machineRecord) {
+                this.logger.error('CRITICAL ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE IT DOES NOT EXIST');
+                this.logger.alert('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+                return;
+            }
+
+        } catch (e) {
+            this.logger.error('ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE OF DATABASE ERROR');
+            this.logger.alert('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+        }
+
         /*
         Receive:
         {
             "from": "slave",
             "_id": "id",
             "stockLeft": 14,
-            "date": <date>,
+            "date": "2020-10-06",
             "status": "sales"
         }
         Send:
@@ -215,7 +263,7 @@ export default class MachineService {
             "from": "master",
             "_id": "id",
             "stockLeft": 14,
-            "date": <date>,
+            "date": "2020-10-06",
             "status": "ackSales"
         }
         */

@@ -21,9 +21,9 @@ export default async ({ expressApp } : {expressApp:Express}) => {
         model: require('../models/machine').default,
     };
 
-    const saleModel = {
-        name: 'saleModel',
-        model: require('../models/sale').default,
+    const dayModel = {
+        name: 'dayModel',
+        model: require('../models/day').default,
     };
 
 
@@ -31,7 +31,7 @@ export default async ({ expressApp } : {expressApp:Express}) => {
     await dependencyInjectorLoader({models: [
             userModel,
             machineModel,
-            saleModel
+            dayModel
         ],
     });
     Logger.info('Dependency Injector loaded');
