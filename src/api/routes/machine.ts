@@ -170,7 +170,7 @@ export default (app: Router) => {
         async (req: Request, res: Response, next: NextFunction) => {
 
             // Relative path file sending flaw, needs to be patched al me mrzi
-            res.sendFile('../uploads/'+req.params.csv);
+            res.sendFile('/root/uploads/'+req.params.csv);
         },
     );
 
