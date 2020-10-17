@@ -46,12 +46,11 @@ export default async (): Promise<MqttClient> => {
                     from: 'master',
                     _id: msg._id,
                     sales: msg.sales,
-                    stockLeft: msg.stockLeft,
                     date: msg.date,
                     status: 'ackSales'
                 };
 
-                machineServiceInstance.ReceiveMQTTUpdate(msg._id, new Date(msg.date), msg.stockLeft);
+                machineServiceInstance.ReceiveMQTTUpdate(msg._id, new Date(msg.date), msg.sales);
 
                 client.publish('aditusCommMaster', JSON.stringify(res));
                 break;

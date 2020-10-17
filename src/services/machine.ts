@@ -191,6 +191,7 @@ export default class MachineService {
     }
 
     public async SendMQTTRestock(machineRestockDTO: IMachineRestockDTO): Promise<boolean> {
+        return true;
         const mqtt: MqttClient = Container.get('mqtt');
 
         var tries = 0;
@@ -251,7 +252,7 @@ export default class MachineService {
             // Update the machine
             const delta = machineRecord.stock - stockLeft;
 
-            machineRecord.stock = stockLeft;
+            machineRecord.stock = machineRecord.stock - stockLeft;
             machineRecord.save();
 
             this.logger.debug('Date: '+date.getDate());
