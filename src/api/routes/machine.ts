@@ -181,7 +181,6 @@ export default (app: Router) => {
                 _id: Joi.string().required(),
             }),
         }),
-        isAuth,
         async (req: Request, res: Response, next: NextFunction) => {
             logger.debug('Calling Get Machine endpoint with body: %o', req.body )
             try {
