@@ -2,6 +2,7 @@ import Logger from "./logger";
 import {MqttClient} from "mqtt";
 import {Container} from "typedi";
 import MachineService from "../services/machine";
+import config from "../config";
 
 export default async (): Promise<MqttClient> => {
 
@@ -10,10 +11,10 @@ export default async (): Promise<MqttClient> => {
     Logger.debug('Connecting MQTT...');
     var mqtt = require('mqtt');
     var options = {
-        port: 13916,
+        port: config.mqtt_port,
         clientId: 'mqttjs_' + Math.random().toString(16).substr(2, 8),
-        username: 'hfqtqzbd',
-        password: 'oNWppf0Rx18x',
+        username: config.mqtt_username,
+        password: config.mqtt_password,
         keepalive: 60,
         reconnectPeriod: 1000,
         protocolId: 'MQIsdp',
@@ -22,7 +23,7 @@ export default async (): Promise<MqttClient> => {
         encoding: 'utf8'
     };
 
-    var client = mqtt.connect('mqtt://m21.cloudmqtt.com', options);
+    var client = mqtt.connect(config.mqtt_url, options);
     Container.set('mqtt', client);
 
     client.on('connect', function() { // When connected

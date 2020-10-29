@@ -15,7 +15,8 @@ export default {
     logs: {
         level: process.env.LOG_LEVEL || 'silly',
     },
-    mailerPass: process.env.MAIL_PASS || "",
-    mailerUser: process.env.MAIL_USER || "",
-    mailerSender: process.env.MAIL_SENDFROM || "noreply@arijakidscontest.com",
+    mqtt_port: process.env.MQTT_PORT || 13916,
+    mqtt_username: process.env.MQTT_USERNAME || "",
+    mqtt_password: process.env.MQTT_PASSWORD || "",
+    mqtt_url: process.env.MQTT_URL || ""
 };
