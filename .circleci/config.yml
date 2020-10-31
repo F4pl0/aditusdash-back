@@ -24,7 +24,7 @@ jobs:
             - .
 
 
-  deploy-backend:
+  deploy-backend-au:
     working_directory: ~
     machine:
       enabled: true
@@ -33,20 +33,45 @@ jobs:
           at: .
       - add_ssh_keys
       - run:
-          name: Upload Production build to server
+          name: Upload Production build to Austrian server
           command: |
             cp package.json ./build/
             cp package-lock.json ./build/
-            scp -r ./build/* root@365aditus.com:/root/aditusdash-back-temp/
+            scp -r ./build/* root@au.365aditus.com:/root/aditusdash-back-temp/
       - run:
           name: Deploy Backend over SSH
           command: |
-            ssh root@365aditus.com "pm2 stop 0 && sudo rm -rf /root/aditusdash-back-prod/* && sudo mv /root/aditusdash-back-temp/* /root/aditusdash-back-prod/ && sudo cp /root/.env /root/aditusdash-back-prod/ && cd /root/aditusdash-back-prod/ && npm i && pm2 start 0 -f"
+            ssh root@au.365aditus.com "pm2 stop 0 && sudo rm -rf /root/aditusdash-back-prod/* && sudo mv /root/aditusdash-back-temp/* /root/aditusdash-back-prod/ && sudo cp /root/.env /root/aditusdash-back-prod/ && cd /root/aditusdash-back-prod/ && npm i && pm2 start 0 -f"
+
+  deploy-backend-ba:
+    working_directory: ~
+    machine:
+      enabled: true
+    steps:
+      - attach_workspace:
+          at: .
+      - add_ssh_keys
+      - run:
+          name: Upload Production build to Bosnian server
+          command: |
+            cp package.json ./build/
+            cp package-lock.json ./build/
+            scp -r ./build/* root@ba.365aditus.com:/root/aditusdash-back-temp/
+      - run:
+          name: Deploy Backend over SSH
+          command: |
+            ssh root@ba.365aditus.com "pm2 stop 0 && sudo rm -rf /root/aditusdash-back-prod/* && sudo mv /root/aditusdash-back-temp/* /root/aditusdash-back-prod/ && sudo cp /root/.env /root/aditusdash-back-prod/ && cd /root/aditusdash-back-prod/ && npm i && pm2 start 0 -f"
 workflows:
   build:
     jobs:
       - build-backend
-      - deploy-backend:
+      - deploy-backend-au:
+          requires:
+            - build-backend
+          filters:
+            branches:
+              only: master
+      - deploy-backend-ba:
           requires:
             - build-backend
           filters:
