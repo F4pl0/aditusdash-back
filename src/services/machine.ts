@@ -238,21 +238,22 @@ export default class MachineService {
         */
     }
 
-    public async ReceiveMQTTUpdate(_id: string, date: Date, stockLeft: number): Promise<void> {
+    public async ReceiveMQTTUpdate(_id: string, date: Date, sales: number): Promise<void> {
 
         try {
             const machineRecord = await this.machineModel.findOne({_id});
 
             if(!machineRecord) {
                 this.logger.error('CRITICAL ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE IT DOES NOT EXIST');
-                this.logger.alert('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+                this.logger.alert('UPDATE MACHINE '+_id+' WITH '+sales+' ON DATE '+date);
                 return;
             }
-
+            this.logger.debug("MQTT Update:");
+            this.logger.debug("DB Stock: "+machineRecord.stock);
+            this.logger.debug("Sales: "+sales);
             // Update the machine
-            const delta = machineRecord.stock - stockLeft;
 
-            machineRecord.stock = machineRecord.stock - stockLeft;
+            machineRecord.stock = machineRecord.stock - sales;
             machineRecord.save();
 
             this.logger.debug('Date: '+date.getDate());
@@ -265,29 +266,31 @@ export default class MachineService {
 
             if (!dayRecord) {
                 // Create the daily record
+                this.logger.debug("Day record does not exist, reating one.");
                 await this.dayModel.create({
                     machine: machineRecord._id,
                     date,
                     price: machineRecord.price,
-                    sales: delta,
+                    sales: sales,
                     csvUrl: ''
                 });
             } else {
+                this.logger.debug("Day record exists. Current sales to date: "+(dayRecord.sales + sales));
                 dayRecord.price = machineRecord.price;
-                dayRecord.sales += delta;
+                dayRecord.sales += sales;
                 await dayRecord.save();
             }
 
             if(!machineRecord) {
                 this.logger.error('CRITICAL ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE IT DOES NOT EXIST');
-                this.logger.warn('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+                this.logger.warn('UPDATE MACHINE '+_id+' WITH '+sales+' ON DATE '+date);
                 return;
             }
 
         } catch (e) {
             this.logger.error('ERROR, CANNOT UPDATE MACHINE '+_id+' BECAUSE OF DATABASE ERROR');
             this.logger.error(e);
-            this.logger.warn('UPDATE MACHINE '+_id+' WITH '+stockLeft+' ON DATE '+date);
+            this.logger.warn('UPDATE MACHINE '+_id+' WITH '+sales+' ON DATE '+date);
         }
 
         /*

@@ -31,7 +31,7 @@ export default async (): Promise<MqttClient> => {
 
         client.subscribe('aditusCommMachine', function (err) {
             if (!err) {
-                client.publish('aditusCommMaster', 'pusi ga toni')
+                //client.publish('aditusCommMaster', 'pusi ga toni')
             }
         })
     });
